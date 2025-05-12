@@ -33,8 +33,9 @@ const ReindersList = () => {
     <View>
       <ThemedButton title="Add Reminder" onPress={() => {}} />
 
-      {reminders.map((reminder) => (
+      {reminders.map((reminder, index) => (
         <Reminders
+          key={index}
           title={reminder.title}
           description={reminder.description}
           time={reminder.time}

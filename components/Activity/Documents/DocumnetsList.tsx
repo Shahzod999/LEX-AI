@@ -29,8 +29,9 @@ const documents = [
 const DocumnetsList = () => {
   return (
     <View>
-      {documents.map((document) => (
+      {documents.map((document, index) => (
         <Documents
+          key={index}
           title={document.title}
           documentType={document.documentType}
           status={document.status}

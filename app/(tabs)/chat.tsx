@@ -21,6 +21,7 @@ interface Message {
   text: string;
   isBot: boolean;
   isTyping?: boolean;
+  isHelpful?: boolean | undefined;
 }
 
 const ChatScreen = () => {
@@ -45,7 +46,7 @@ const ChatScreen = () => {
       isBot: true,
     },
   ]);
-  const [helpfulFeedback, setHelpfulFeedback] = useState(false);
+  // const [helpfulFeedback, setHelpfulFeedback] = useState<boolean | null>(null);
 
   const [getOpenAI, { data, isLoading, error }] = useGetOpenAIMutation();
 
@@ -56,6 +57,7 @@ const ChatScreen = () => {
       id: messages.length + 1,
       text: inputText,
       isBot: false,
+      isHelpful: undefined,
     };
 
     setMessages((prev) => [...prev, newMessage]);
@@ -95,10 +97,16 @@ const ChatScreen = () => {
     }
   };
 
-  const handleFeedback = (isHelpful: boolean) => {
-    setHelpfulFeedback(isHelpful);
+  const handleFeedback = (id: number, isHelpful: boolean) => {
+    setMessages((prev) =>
+      prev.map((message) =>
+        message.id === id ? { ...message, isHelpful: isHelpful } : message
+      )
+    );
+    // setHelpfulFeedback(isHelpful);
     // You could add logic here to send feedback to your backend
   };
+  console.log(messages);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -110,9 +118,9 @@ const ChatScreen = () => {
           />
           <View
             style={[styles.chatContainer, { backgroundColor: colors.card }]}>
-            {messages.map((message) => (
+            {messages.map((message, index) => (
               <View
-                key={message.id}
+                key={message.id + index}
                 style={[
                   styles.messageWrapper,
                   !message.isBot && styles.userMessageWrapper,
@@ -141,46 +149,46 @@ const ChatScreen = () => {
                     <View style={styles.feedbackContainer}>
                       <TouchableOpacity
                         style={styles.feedbackButton}
-                        onPress={() => handleFeedback(true)}
-                        disabled={helpfulFeedback !== null}>
+                        onPress={() => handleFeedback(message.id, true)}
+                        disabled={message.isHelpful !== null}>
                         <Ionicons
                           name={
-                            helpfulFeedback === true
+                            message.isHelpful === true
                               ? "thumbs-up"
                               : "thumbs-up-outline"
                           }
                           size={18}
                           color={
-                            helpfulFeedback === true ? "#4CAF50" : "#757575"
+                            message.isHelpful === true ? "#4CAF50" : "#757575"
                           }
                         />
                         <Text
                           style={[
                             styles.feedbackText,
-                            helpfulFeedback === true && { color: "#4CAF50" },
+                            message.isHelpful === true && { color: "#4CAF50" },
                           ]}>
                           Helpful
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={styles.feedbackButton}
-                        onPress={() => handleFeedback(false)}
-                        disabled={helpfulFeedback !== null}>
+                        onPress={() => handleFeedback(message.id, false)}
+                        disabled={message.isHelpful !== null}>
                         <Ionicons
                           name={
-                            helpfulFeedback === false
+                            message.isHelpful === false
                               ? "thumbs-down"
                               : "thumbs-down-outline"
                           }
                           size={18}
                           color={
-                            helpfulFeedback === false ? "#F44336" : "#757575"
+                            message.isHelpful === false ? "#F44336" : "#757575"
                           }
                         />
                         <Text
                           style={[
                             styles.feedbackText,
-                            helpfulFeedback === false && { color: "#F44336" },
+                            message.isHelpful === false && { color: "#F44336" },
                           ]}>
                           Not helpful
                         </Text>

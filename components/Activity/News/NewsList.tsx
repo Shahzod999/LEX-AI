@@ -29,8 +29,9 @@ const news = [
 const NewsList = () => {
   return (
     <View>
-      {news.map((item) => (
+      {news.map((item, index) => (
         <News
+          key={index}
           title={item.title}
           description={item.description}
           source={item.source}

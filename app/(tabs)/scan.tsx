@@ -24,6 +24,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { useGetOpenAIMutation } from "@/redux/api/endpoints/openAI";
 import * as FileSystem from "expo-file-system";
+import ThemedButton from "@/components/ThemedButton";
 
 // Message interface
 interface Message {
@@ -505,6 +506,13 @@ const ScanScreen = () => {
               </View>
             )}
           </ThemedCard>
+
+          <ThemedButton
+            title="Save"
+            onPress={() => {
+              console.log("Save");
+            }}
+          />
         </ScrollView>
         {scannedImage && !isAnalyzing && (
           <KeyboardAvoidingView
