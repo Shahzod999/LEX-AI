@@ -5,23 +5,20 @@ import { useTheme } from "@/context/ThemeContext";
 import Header from "@/components/Card/Header";
 import Emergency from "@/components/Home/Emergency";
 import { useRouter } from "expo-router";
+import Quotes from "@/components/Quotes";
 export default function HomeScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   return (
     <ThemedScreen>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}>
         <Header
           title="Welcome to Lex - Your Legal Guardian"
           subtitle="You're not alone your legal journey"
         />
-        <Text
-          style={[
-            styles.quote,
-            { color: colors.hint, borderColor: colors.accent },
-          ]}>
-          Trust the proccess
-        </Text>
+        <Quotes />
 
         <Text style={[styles.title, { color: colors.text }]}>
           How can we help you today?
@@ -76,11 +73,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginVertical: 16,
   },
-  quote: {
-    fontSize: 16,
-    padding: 16,
-    borderLeftWidth: 4,
-    borderRadius: 4,
-    marginVertical: 16,
+
+  content: {
+    paddingVertical: 16,
   },
 });

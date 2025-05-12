@@ -6,8 +6,10 @@ import {
   Animated,
   StyleSheet,
   LayoutChangeEvent,
+  Modal,
+  FlatList,
 } from "react-native";
-
+import { useTheme } from "@/context/ThemeContext";
 interface TabsTypes {
   id: string;
   label: string;
@@ -18,7 +20,7 @@ interface TabsProps {
   tabs: TabsTypes[];
   onTabChange?: (tabId: string) => void;
   setOrderType?: (tabId: TabsTypes) => void;
-  activeTab?: string; // Добавляем возможность управлять извне
+  activeTab?: string;
 }
 
 const ToggleTabsRN: React.FC<TabsProps> = ({
@@ -27,33 +29,33 @@ const ToggleTabsRN: React.FC<TabsProps> = ({
   setOrderType,
   activeTab: externalActiveTab,
 }) => {
-  // Используем внешний activeTab если он передан, иначе внутреннее состояние
+  const { colors } = useTheme();
   const [internalActiveTab, setInternalActiveTab] = useState(tabs[0].id);
-  const activeTab = externalActiveTab !== undefined ? externalActiveTab : internalActiveTab;
-  
+  const activeTab =
+    externalActiveTab !== undefined ? externalActiveTab : internalActiveTab;
   const [tabWidths, setTabWidths] = useState<{ [key: string]: number }>({});
   const [containerWidth, setContainerWidth] = useState(0);
-  
-  // Используем useRef для сохранения анимации между рендерами
+  const [showDropdown, setShowDropdown] = useState(false);
   const slideAnim = useRef(new Animated.Value(0)).current;
+
+  const visibleTabs = tabs.slice(0, 3);
+  const dropdownTabs = tabs.slice(3);
 
   const handleTabChange = (tab: TabsTypes) => {
     if (externalActiveTab === undefined) {
-      // Если активная вкладка управляется внутри компонента
       setInternalActiveTab(tab.id);
     }
     setOrderType?.(tab);
     onTabChange?.(tab.id);
+    setShowDropdown(false);
   };
 
-  // Update animation when active tab changes
   useEffect(() => {
-    const activeIndex = tabs.findIndex((tab) => tab.id === activeTab);
+    const activeIndex = visibleTabs.findIndex((tab) => tab.id === activeTab);
     let offset = 0;
 
-    // Calculate the offset based on the tabs before the active one
     for (let i = 0; i < activeIndex; i++) {
-      offset += tabWidths[tabs[i].id] || 0;
+      offset += tabWidths[visibleTabs[i].id] || 0;
     }
 
     Animated.timing(slideAnim, {
@@ -61,9 +63,8 @@ const ToggleTabsRN: React.FC<TabsProps> = ({
       duration: 300,
       useNativeDriver: false,
     }).start();
-  }, [activeTab, tabWidths, tabs]);
+  }, [activeTab, tabWidths, visibleTabs]);
 
-  // Measure the width of each tab
   const onTabLayout = (event: LayoutChangeEvent, tabId: string) => {
     const { width } = event.nativeEvent.layout;
     setTabWidths((prev) => ({
@@ -72,41 +73,62 @@ const ToggleTabsRN: React.FC<TabsProps> = ({
     }));
   };
 
-  // Measure the width of the container
   const onContainerLayout = (event: LayoutChangeEvent) => {
     const { width } = event.nativeEvent.layout;
     setContainerWidth(width);
   };
 
-  // Get the width of the active tab indicator
   const getIndicatorWidth = () => {
-    const activeIndex = tabs.findIndex((tab) => tab.id === activeTab);
-    return tabWidths[tabs[activeIndex]?.id] || 0;
+    const activeIndex = visibleTabs.findIndex((tab) => tab.id === activeTab);
+    return tabWidths[visibleTabs[activeIndex]?.id] || 0;
   };
+
+  const renderDropdownItem = ({ item }: { item: TabsTypes }) => (
+    <TouchableOpacity
+      style={[styles.dropdownItem, { borderBottomColor: colors.border }]}
+      onPress={() => handleTabChange(item)}>
+      <Text
+        style={[
+          styles.dropdownItemText,
+          { color: colors.text },
+          activeTab === item.id && [
+            styles.activeDropdownItemText,
+            { color: colors.accent },
+          ],
+        ]}>
+        {item.label}
+      </Text>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.tabsWrapper} onLayout={onContainerLayout}>
       <View style={styles.tabs}>
-        {tabs.map((tab) => (
+        {visibleTabs.map((tab) => (
           <TouchableOpacity
             key={tab.id}
             style={styles.tabButton}
             onLayout={(e) => onTabLayout(e, tab.id)}
             onPress={() => handleTabChange(tab)}
-            activeOpacity={0.7}
-          >
+            activeOpacity={0.7}>
             <Text
               style={[
                 styles.tabText,
                 activeTab === tab.id && styles.activeTabText,
-              ]}
-            >
+              ]}>
               {tab.label}
             </Text>
           </TouchableOpacity>
         ))}
 
-        {/* Active tab indicator */}
+        {dropdownTabs.length > 0 && (
+          <TouchableOpacity
+            style={styles.moreButton}
+            onPress={() => setShowDropdown(true)}>
+            <Text style={styles.moreButtonText}>•••</Text>
+          </TouchableOpacity>
+        )}
+
         <Animated.View
           style={[
             styles.activeIndicator,
@@ -117,6 +139,30 @@ const ToggleTabsRN: React.FC<TabsProps> = ({
           ]}
         />
       </View>
+
+      <Modal
+        visible={showDropdown}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDropdown(false)}>
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowDropdown(false)}>
+          <View
+            style={[
+              styles.dropdownContainer,
+              { backgroundColor: colors.darkBackground },
+            ]}>
+            <FlatList
+              data={dropdownTabs}
+              renderItem={renderDropdownItem}
+              keyExtractor={(item) => item.id}
+              style={styles.dropdownList}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
@@ -160,6 +206,46 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
     borderRadius: 7,
+  },
+  moreButton: {
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    borderRadius: 7,
+    zIndex: 1,
+  },
+  moreButtonText: {
+    fontSize: 16,
+    color: "#777777",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  dropdownContainer: {
+    borderRadius: 10,
+    width: "80%",
+    maxHeight: "60%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  dropdownList: {
+    padding: 10,
+  },
+  dropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+  },
+  dropdownItemText: {
+    fontSize: 16,
+  },
+  activeDropdownItemText: {
+    fontWeight: "600",
   },
 });
 
