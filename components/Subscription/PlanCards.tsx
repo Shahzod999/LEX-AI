@@ -23,7 +23,7 @@ const PlanCards = ({
 }: PlanCardsProps) => {
   const { colors } = useTheme();
   const renderFeatureItem = (text: string) => (
-    <View style={styles.featureItem}>
+    <View style={styles.featureItem} key={text}>
       <Ionicons
         name="checkmark"
         size={18}

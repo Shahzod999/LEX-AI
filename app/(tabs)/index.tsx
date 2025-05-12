@@ -4,8 +4,10 @@ import HomeCard from "@/components/Card/HomeCard";
 import { useTheme } from "@/context/ThemeContext";
 import Header from "@/components/Card/Header";
 import Emergency from "@/components/Home/Emergency";
+import { useRouter } from "expo-router";
 export default function HomeScreen() {
   const { colors } = useTheme();
+  const router = useRouter();
   return (
     <ThemedScreen>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -30,24 +32,36 @@ export default function HomeScreen() {
           description="Let AI analyze your legal papers"
           icon="cloud-upload-outline"
           color={colors.accent}
+          onPress={() => {
+            router.push("/scan");
+          }}
         />
         <HomeCard
           title="Immigration Help"
           description="Navigate visa and status options"
           icon="document-text"
           color={colors.accent}
+          onPress={() => {
+            router.push("/immigration");
+          }}
         />
         <HomeCard
           title="Ask Question"
           description="Chat with AI legal assistant"
           icon="chatbubble-outline"
           color={colors.success}
+          onPress={() => {
+            router.push("/chat");
+          }}
         />
         <HomeCard
           title="Find Resources"
           description="local help and legal aid"
           icon="location-outline"
           color={colors.warning}
+          onPress={() => {
+            router.push("/resources");
+          }}
         />
       </ScrollView>
       <Emergency />

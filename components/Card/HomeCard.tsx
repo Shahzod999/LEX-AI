@@ -9,15 +9,17 @@ const HomeCard = ({
   description,
   icon,
   color,
+  onPress,
 }: {
   title: string;
   description: string;
   icon: any;
   color?: string;
+  onPress?: () => void;
 }) => {
   const { colors } = useTheme();
   return (
-    <ThemedCard>
+    <ThemedCard onPress={onPress}>
       <View style={styles.container}>
         <View style={styles.iconContainer}>
           <Ionicons name={icon} size={30} color={color} />

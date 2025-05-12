@@ -86,6 +86,7 @@ export default function TabsLayout() {
         <Tabs.Screen name="account-settings" options={{ href: null }} />
         <Tabs.Screen name="subscription" options={{ href: null }} />
         <Tabs.Screen name="help-center" options={{ href: null }} />
+        <Tabs.Screen name="immigration" options={{ href: null }} />
         <Tabs.Screen name="resources" options={{ href: null }} />
         <Tabs.Screen name="privacy-policy" options={{ href: null }} />
         <Tabs.Screen name="terms-of-use" options={{ href: null }} />
